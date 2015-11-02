@@ -1,0 +1,102 @@
+\hypertarget{classClient}{\section{Client Class Reference}
+\label{classClient}\index{Client@{Client}}
+}
+\subsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\hyperlink{classClient_a049caef7b1480331cb1cd64a77207316}{Client} (string \&)
+\item 
+\hyperlink{classClient_a840e519ca781888cbd54181572ebe3a7}{$\sim$\-Client} ()
+\item 
+void \hyperlink{classClient_a019766dfe120af45e1dc804cf546b1e5}{server\-Id} (char $\ast$, struct sockaddr $\ast$)
+\item 
+int \hyperlink{classClient_af3d4ff045060d8ada956932c6537a46e}{socket} (struct sockaddr\-\_\-storage sadr)
+\item 
+void \hyperlink{classClient_adfce451d5b4f79bae5eeedfedf577109}{log\-To} (char $\ast$, struct sockaddr)
+\item 
+void \hyperlink{classClient_a87552e4eb862504ec0f22f9ea0237cef}{send\-To} (struct sockaddr, char $\ast$)
+\item 
+void \hyperlink{classClient_a0ab2eb457fa61ac2bbff99fbc728dec2}{recvfrom} (struct sockaddr, char $\ast$)
+\item 
+\hypertarget{classClient_ad58aa0b3fe3da9b09e220514e00e3661}{struct sockaddr\-\_\-storage {\bfseries addr\-Storage} ()}\label{classClient_ad58aa0b3fe3da9b09e220514e00e3661}
+
+\item 
+\hypertarget{classClient_a58673099e41e465177a529fc1598e6c8}{const struct sockaddr\-\_\-in \& {\bfseries addr\-In} ()}\label{classClient_a58673099e41e465177a529fc1598e6c8}
+
+\item 
+\hypertarget{classClient_aaa05ab91ae245cd268f1a3cab2035326}{const struct sockaddr\-\_\-in6 \& {\bfseries addr\-In6} ()}\label{classClient_aaa05ab91ae245cd268f1a3cab2035326}
+
+\end{DoxyCompactItemize}
+\subsection*{Protected Attributes}
+\begin{DoxyCompactItemize}
+\item 
+\hypertarget{classClient_a0689b78667aeebeea20c8d9069561d64}{int {\bfseries sock4}}\label{classClient_a0689b78667aeebeea20c8d9069561d64}
+
+\item 
+\hypertarget{classClient_a16332660360747503b515bd7358c91d6}{int {\bfseries sock6}}\label{classClient_a16332660360747503b515bd7358c91d6}
+
+\end{DoxyCompactItemize}
+
+
+\subsection{Constructor \& Destructor Documentation}
+\hypertarget{classClient_a049caef7b1480331cb1cd64a77207316}{\index{Client@{Client}!Client@{Client}}
+\index{Client@{Client}!Client@{Client}}
+\subsubsection[{Client}]{\setlength{\rightskip}{0pt plus 5cm}Client\-::\-Client (
+\begin{DoxyParamCaption}
+\item[{string \&}]{}
+\end{DoxyParamCaption}
+)}}\label{classClient_a049caef7b1480331cb1cd64a77207316}
+Constructeur \hypertarget{classClient_a840e519ca781888cbd54181572ebe3a7}{\index{Client@{Client}!$\sim$\-Client@{$\sim$\-Client}}
+\index{$\sim$\-Client@{$\sim$\-Client}!Client@{Client}}
+\subsubsection[{$\sim$\-Client}]{\setlength{\rightskip}{0pt plus 5cm}Client\-::$\sim$\-Client (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)}}\label{classClient_a840e519ca781888cbd54181572ebe3a7}
+Destructeur 
+
+\subsection{Member Function Documentation}
+\hypertarget{classClient_adfce451d5b4f79bae5eeedfedf577109}{\index{Client@{Client}!log\-To@{log\-To}}
+\index{log\-To@{log\-To}!Client@{Client}}
+\subsubsection[{log\-To}]{\setlength{\rightskip}{0pt plus 5cm}void Client\-::log\-To (
+\begin{DoxyParamCaption}
+\item[{char $\ast$}]{, }
+\item[{struct sockaddr}]{}
+\end{DoxyParamCaption}
+)}}\label{classClient_adfce451d5b4f79bae5eeedfedf577109}
+log\-To abonnement aux serveurs du canal \hypertarget{classClient_a0ab2eb457fa61ac2bbff99fbc728dec2}{\index{Client@{Client}!recvfrom@{recvfrom}}
+\index{recvfrom@{recvfrom}!Client@{Client}}
+\subsubsection[{recvfrom}]{\setlength{\rightskip}{0pt plus 5cm}void Client\-::recvfrom (
+\begin{DoxyParamCaption}
+\item[{struct sockaddr}]{, }
+\item[{char $\ast$}]{}
+\end{DoxyParamCaption}
+)}}\label{classClient_a0ab2eb457fa61ac2bbff99fbc728dec2}
+recvfrom reçoit et affiche les messages \hypertarget{classClient_a87552e4eb862504ec0f22f9ea0237cef}{\index{Client@{Client}!send\-To@{send\-To}}
+\index{send\-To@{send\-To}!Client@{Client}}
+\subsubsection[{send\-To}]{\setlength{\rightskip}{0pt plus 5cm}void Client\-::send\-To (
+\begin{DoxyParamCaption}
+\item[{struct sockaddr}]{, }
+\item[{char $\ast$}]{}
+\end{DoxyParamCaption}
+)}}\label{classClient_a87552e4eb862504ec0f22f9ea0237cef}
+send\-To Envoi des messages au server du canal \hypertarget{classClient_a019766dfe120af45e1dc804cf546b1e5}{\index{Client@{Client}!server\-Id@{server\-Id}}
+\index{server\-Id@{server\-Id}!Client@{Client}}
+\subsubsection[{server\-Id}]{\setlength{\rightskip}{0pt plus 5cm}void Client\-::server\-Id (
+\begin{DoxyParamCaption}
+\item[{char $\ast$}]{, }
+\item[{struct sockaddr $\ast$}]{}
+\end{DoxyParamCaption}
+)}}\label{classClient_a019766dfe120af45e1dc804cf546b1e5}
+server\-Id retourne identite des serveurs d'un canal dans la struct sockaddr \hypertarget{classClient_af3d4ff045060d8ada956932c6537a46e}{\index{Client@{Client}!socket@{socket}}
+\index{socket@{socket}!Client@{Client}}
+\subsubsection[{socket}]{\setlength{\rightskip}{0pt plus 5cm}int Client\-::socket (
+\begin{DoxyParamCaption}
+\item[{struct sockaddr\-\_\-storage}]{sadr}
+\end{DoxyParamCaption}
+)}}\label{classClient_af3d4ff045060d8ada956932c6537a46e}
+Fammille de socket qui a été faites 
+
+The documentation for this class was generated from the following file\-:\begin{DoxyCompactItemize}
+\item 
+\hyperlink{client_8hpp}{client.\-hpp}\end{DoxyCompactItemize}

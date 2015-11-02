@@ -1,0 +1,98 @@
+\hypertarget{client_8h}{\section{client.\-h File Reference}
+\label{client_8h}\index{client.\-h@{client.\-h}}
+}
+
+
+Ce fichier contient les différentes fonctionnalités du client.  
+
+
+{\ttfamily \#include $<$stdio.\-h$>$}\\*
+{\ttfamily \#include $<$stdlib.\-h$>$}\\*
+{\ttfamily \#include $<$string.\-h$>$}\\*
+{\ttfamily \#include $<$unistd.\-h$>$}\\*
+{\ttfamily \#include $<$sys/types.\-h$>$}\\*
+{\ttfamily \#include $<$sys/socket.\-h$>$}\\*
+{\ttfamily \#include $<$netinet/in.\-h$>$}\\*
+{\ttfamily \#include $<$arpa/inet.\-h$>$}\\*
+\subsection*{Macros}
+\begin{DoxyCompactItemize}
+\item 
+\hypertarget{client_8h_ae6648cd71a8bd49d58ae8ed33ba910d1}{\#define {\bfseries M\-A\-X\-L\-E\-N}~1024}\label{client_8h_ae6648cd71a8bd49d58ae8ed33ba910d1}
+
+\end{DoxyCompactItemize}
+\subsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+\hypertarget{client_8h_af2cb254df75f4b45ca0b0893f9f01979}{void {\bfseries usage} (char $\ast$)}\label{client_8h_af2cb254df75f4b45ca0b0893f9f01979}
+
+\item 
+\hypertarget{client_8h_a094f43785aad7ab2c2ccaa1db14eceeb}{void {\bfseries raler} (char $\ast$)}\label{client_8h_a094f43785aad7ab2c2ccaa1db14eceeb}
+
+\item 
+void \hyperlink{client_8h_ab1a19cc259e679c47430a2544ab163e0}{server\-Id} (char $\ast$, struct sockaddr $\ast$)
+\item 
+void \hyperlink{client_8h_a3823970aa1c32399063f3bdd894bac12}{log\-To} (char $\ast$, struct sockaddr)
+\item 
+void \hyperlink{client_8h_a90c90780f3263035188a8690c1c3258a}{send\-To} (struct sockaddr, char $\ast$)
+\item 
+void \hyperlink{client_8h_aab9fbf147127c224611e50859a879e40}{recvfrom} (struct sockaddr, char $\ast$)
+\end{DoxyCompactItemize}
+\subsection*{Variables}
+\begin{DoxyCompactItemize}
+\item 
+\hypertarget{client_8h_a27efffa841d407a7cca20da2a8e7e0d9}{struct sockaddr\-\_\-storage {\bfseries sadr}}\label{client_8h_a27efffa841d407a7cca20da2a8e7e0d9}
+
+\item 
+\hypertarget{client_8h_a058bb63780dbca2114b1d723e9a4ac53}{struct sockaddr\-\_\-in $\ast$ {\bfseries sadr4} = (struct sockaddr\-\_\-in $\ast$) \&sadr}\label{client_8h_a058bb63780dbca2114b1d723e9a4ac53}
+
+\item 
+\hypertarget{client_8h_ae9b413ed626a0e98252c0f57d837742d}{struct sockaddr\-\_\-in6 $\ast$ {\bfseries sadr6} = (struct sockaddr\-\_\-in6 $\ast$) \&sadr}\label{client_8h_ae9b413ed626a0e98252c0f57d837742d}
+
+\item 
+\hypertarget{client_8h_a75c5f1c412063e2f02bf468f48a4975f}{socklen\-\_\-t {\bfseries salong}}\label{client_8h_a75c5f1c412063e2f02bf468f48a4975f}
+
+\end{DoxyCompactItemize}
+
+
+\subsection{Detailed Description}
+Ce fichier contient les différentes fonctionnalités du client. Documentation
+
+\begin{DoxyAuthor}{Author}
+C\-A\-M\-A\-R\-A Mamadou 
+\end{DoxyAuthor}
+
+
+\subsection{Function Documentation}
+\hypertarget{client_8h_a3823970aa1c32399063f3bdd894bac12}{\index{client.\-h@{client.\-h}!log\-To@{log\-To}}
+\index{log\-To@{log\-To}!client.h@{client.\-h}}
+\subsubsection[{log\-To}]{\setlength{\rightskip}{0pt plus 5cm}void log\-To (
+\begin{DoxyParamCaption}
+\item[{char $\ast$}]{, }
+\item[{struct sockaddr}]{}
+\end{DoxyParamCaption}
+)}}\label{client_8h_a3823970aa1c32399063f3bdd894bac12}
+log\-To abonnement aux serveurs du canal \hypertarget{client_8h_aab9fbf147127c224611e50859a879e40}{\index{client.\-h@{client.\-h}!recvfrom@{recvfrom}}
+\index{recvfrom@{recvfrom}!client.h@{client.\-h}}
+\subsubsection[{recvfrom}]{\setlength{\rightskip}{0pt plus 5cm}void recvfrom (
+\begin{DoxyParamCaption}
+\item[{struct sockaddr}]{, }
+\item[{char $\ast$}]{}
+\end{DoxyParamCaption}
+)}}\label{client_8h_aab9fbf147127c224611e50859a879e40}
+recvfrom reçoit et affiche les messages \hypertarget{client_8h_a90c90780f3263035188a8690c1c3258a}{\index{client.\-h@{client.\-h}!send\-To@{send\-To}}
+\index{send\-To@{send\-To}!client.h@{client.\-h}}
+\subsubsection[{send\-To}]{\setlength{\rightskip}{0pt plus 5cm}void send\-To (
+\begin{DoxyParamCaption}
+\item[{struct sockaddr}]{, }
+\item[{char $\ast$}]{}
+\end{DoxyParamCaption}
+)}}\label{client_8h_a90c90780f3263035188a8690c1c3258a}
+send\-To Envoi des messages au server du canal \hypertarget{client_8h_ab1a19cc259e679c47430a2544ab163e0}{\index{client.\-h@{client.\-h}!server\-Id@{server\-Id}}
+\index{server\-Id@{server\-Id}!client.h@{client.\-h}}
+\subsubsection[{server\-Id}]{\setlength{\rightskip}{0pt plus 5cm}void server\-Id (
+\begin{DoxyParamCaption}
+\item[{char $\ast$}]{, }
+\item[{struct sockaddr $\ast$}]{}
+\end{DoxyParamCaption}
+)}}\label{client_8h_ab1a19cc259e679c47430a2544ab163e0}
+server\-Id retourne identite des serveurs d'un canal dans la struct sockaddr 
