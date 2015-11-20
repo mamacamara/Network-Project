@@ -26,7 +26,8 @@
 using namespace std;
 class  Client
 {
-  
+ private :
+ string config;
  protected :
   int sock4;
   int sock6;
@@ -47,26 +48,27 @@ class  Client
  * serverId retourne identite des serveurs d'un canal dans la struct sockaddr
  */
  
-void serverId(char *,struct sockaddr *);
+void channelId(string &,const AddrStorage & );
 /*!
   * Famille de socket qui a été faites
   */
-int mySocket(struct sockaddr_storage sadr);
+int mySocket(const AddrStorage &);
  /*!
   * logTo abonnement aux serveurs du canal
   */
-  void logTo(char * ,struct sockaddr);
+  void logTo(string  ,const AddrStorage &);
 /*!
  * sendTo Envoi des messages au server du canal
  */ 
- void sendTo(struct sockaddr , char *);
+ void sendTo(const AddrStorage & );
 /*! 
   * recvfrom reçoit et affiche les messages 
   */
-void recvfrom(struct sockaddr, char *);
+void recvFrom(AddrStorage);
 struct sockaddr_storage addrStorage();
 const struct sockaddr_in & addrIn();
 const struct sockaddr_in6 & addrIn6();
+string charAdresse();
 };
 #endif
 

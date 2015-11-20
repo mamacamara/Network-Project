@@ -19,4 +19,5 @@ $(EXEC): $(OBJS)
 
 clean :
 	rm -rf *.o rm -rf build/* rm -rf src/*~ rm -rf src/#* rm -rf *.o
-
+	rm -r build/*.o
+        
