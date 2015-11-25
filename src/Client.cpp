@@ -14,7 +14,9 @@
   {
   perror (msg) ;
   exit (1) ;
-  }*/
+}*/
+//Canal de comunication 
+
 Client::Client(string config)
 {
     File conf(config);
@@ -22,7 +24,10 @@ Client::Client(string config)
     int i = 1;
     string line = "end";
     string a,p;
+    //ssize_t fr;
 
+   cout<<"Who am i ?\n";
+   read(0,login,MAXLEN);
     while((line = conf.read(i)) != "end")
     {
         char delim = ' ';
@@ -58,7 +63,7 @@ Client::Client(string config)
             //convert
 
             AddrStorage addr(a,p);
-            State s(DISCONNECT);
+//            State s(DISCONNECT);
 
             //_server_map[addr] = s;
         }
@@ -78,7 +83,7 @@ Client::~Client()
     close(sock4);
     close(sock6);
 }
-//struct sockd
+//void Client::channel
 // Demande l'identité du serveur 
 /* void channelId(char* channel,)
    {
@@ -168,18 +173,6 @@ void Client::logTo(string channel, const AddrStorage & addr)
         perror("socket non créé pour ce canal");
         exit(-1);
     }
-    /*socklen_t salong = addr.len();
-      struct sockaddr * saddr = addr.sockaddr();*/
-    //memset(&saddr,0x00,salong);
-    /*int attache = bind(socket, saddr , salong);
-      if (attache < 0 )
-      {
-      perror("attache client");
-      exit(-1);
-      }
-      cout<<"socket attaché \n";*/
-    int o = 1;
-    setsockopt(socket, SOL_SOCKET, SO_BROADCAST, &o, sizeof o) ;
 }
 // envoi un message au serveur de canal
 void Client::sendTo(const  AddrStorage & addr)

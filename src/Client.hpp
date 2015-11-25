@@ -23,6 +23,12 @@
 //#include "library.hpp"
 
 #define	MAXLEN	1024
+
+struct  canal_comm
+{
+    string nom ;
+    AddrStorage canal;
+};
 using namespace std;
 class  Client
 {
@@ -31,6 +37,7 @@ class  Client
  protected :
   int sock4;
   int sock6;
+  char * login;
 
 // functions
 //void usage (char *);
@@ -45,10 +52,10 @@ class  Client
     */
  ~Client();
 /*!
- * serverId retourne identite des serveurs d'un canal dans la struct sockaddr
+ * serverId :retourne identite des serveurs d'un canal dans la struct sockaddr
  */
  
-void channelId(string &,const AddrStorage & );
+const AddrStorage & channelId(canal_comm ,const AddrStorage & );
 /*!
   * Famille de socket qui a été faites
   */
