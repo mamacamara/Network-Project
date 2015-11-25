@@ -24,11 +24,11 @@
 
 #define	MAXLEN	1024
 
-struct  canal_comm
+typedef struct  canal_comm
 {
-    string nom ;
+    char * nom ;
     AddrStorage canal;
-};
+} CANAL;
 using namespace std;
 class  Client
 {
@@ -55,7 +55,7 @@ class  Client
  * serverId :retourne identite des serveurs d'un canal dans la struct sockaddr
  */
  
-const AddrStorage & channelId(canal_comm ,const AddrStorage & );
+void  channelId(CANAL ,const AddrStorage & );
 /*!
   * Famille de socket qui a été faites
   */

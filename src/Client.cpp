@@ -83,7 +83,19 @@ Client::~Client()
     close(sock4);
     close(sock6);
 }
-//void Client::channel
+void Client::channelId(CANAL cnal,const AddrStorage & addr)
+{
+    int soket  = mySocket(addr);
+    char  msg[] = "Identité des serveurs sur le canal";
+    char *  message = NULL;
+    strcpy(message,msg);
+    strcat(message,cnal.nom);
+    struct sockaddr * saddr = addr.sockaddr();
+    socklen_t salong = addr.len();
+    int longu = strlen(message);
+    sendto(soket, message, longu, 0,  saddr, salong) ;
+
+}   
 // Demande l'identité du serveur 
 /* void channelId(char* channel,)
    {
