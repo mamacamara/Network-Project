@@ -83,18 +83,20 @@ Client::~Client()
     close(sock4);
     close(sock6);
 }
-void Client::channelId(CANAL cnal,const AddrStorage & addr)
+void Client::channelId(char * cnal,const AddrStorage & addr)
 {
     int soket  = mySocket(addr);
-    char  msg[] = "Identité des serveurs sur le canal";
+    /*char  msg[] = "Identité des serveurs sur le canal";
     char *  message = NULL;
     strcpy(message,msg);
-    strcat(message,cnal.nom);
+    strcat(message,cnal.nom);*/
     struct sockaddr * saddr = addr.sockaddr();
     socklen_t salong = addr.len();
-    int longu = strlen(message);
-    sendto(soket, message, longu, 0,  saddr, salong) ;
-
+    int longu = strlen(cnal);
+   int rq =  sendto(soket, cnal, longu, 0,  saddr, salong);
+   if rq < 0
+       cout<<"Error request from Channel Id\n";
+    
 }   
 // Demande l'identité du serveur 
 /* void channelId(char* channel,)
@@ -178,7 +180,7 @@ int Client::mySocket(const AddrStorage & addr)
     return res;
 }
 // Abonne   au serveur du canal
-void Client::logTo(string channel, const AddrStorage & addr)
+void Client::logTo(char * cnal, const AddrStorage & addr)
 {
     int socket = mySocket(addr);
     if (socket < 0){
@@ -187,29 +189,27 @@ void Client::logTo(string channel, const AddrStorage & addr)
     }
 }
 // envoi un message au serveur de canal
-void Client::sendTo(const  AddrStorage & addr)
+void Client::sendTo(const  AddrStorage & addr, char buf[] )
 {   
     int r, socket = mySocket(addr);
     struct sockaddr * saddr = addr.sockaddr();
-    char buf [MAXLEN] ;
+    //char buf [MAXLEN] ;
     socklen_t salong = addr.len();
-    while ((r = read (0, buf, MAXLEN)) > 0)
-    {
-        r = sendto(socket, buf, r, 0,  saddr, salong) ;
+        buf = fgets(buf,MAXLEN,stdin)
+        r = sendto(socket, buf, MAXLEN, 0,  saddr, salong) ;
         if(r==-1)
-        {
-            throw (Exception("send_to : Failed", __LINE__));
-        }
-    }
+         throw (Exception("send_to : Failed", __LINE__));
+        
+    
 }
-void Client::recvFrom(AddrStorage addr)
+void Client::recvFrom(AddrStorage addr, char buf[])
 {
     struct sockaddr_storage * sonadr = addr.storage();
     socklen_t salong = addr.len(); 
     int r, af , socket = mySocket(addr);
     void *nadr ;            /* au format network */
     char padr [INET6_ADDRSTRLEN] ;  /* au format presentation */
-    char buf [MAXLEN] ;
+    memset(buf,0x00,MAXLEN*sizeof(char));
  r = recvfrom (socket, buf, MAXLEN, 0, (struct sockaddr *) &sonadr, &salong) ;
     af = ((struct sockaddr *) &sonadr)->sa_family ;
     switch (af)
