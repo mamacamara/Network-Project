@@ -1,119 +1,723 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <unistd.h>
-#include <sys/types.h>
-#include <sys/socket.h>
-#include <netinet/in.h>
-#include <arpa/inet.h>
-#include <netdb.h>
+#include "Channels.hpp"
 
-#define	MAXLEN	1024
-#define	SERVICE	"9000"		/* ou un nom dans /etc/services */
-#define	MAXSOCK	32
-
-void raler (char *msg)
+Channels::Channels(string port, string config):Client(config),_run(true)
 {
-    perror (msg) ;
-    exit (1) ;
+    //We look every interfaces we can use
+    struct addrinfo local, *iterator, *start;
+
+    memset(&local,0,sizeof(struct addrinfo));
+    local.ai_family = PF_UNSPEC;
+    local.ai_socktype = SOCK_DGRAM;
+    local.ai_flags = AI_PASSIVE;
+    int r = getaddrinfo(NULL,port.c_str(),&local,&start);
+    _n_socks = 0;
+
+    for(iterator=start;iterator&&_n_socks<MAXSOCK;iterator=iterator->ai_next)
+    {
+        _sockets[_n_socks] = socket(iterator->ai_family,iterator->ai_socktype,iterator->ai_protocol);
+        if(_sockets[_n_socks] != -1)
+        {   
+            chnl.canal[_n_socks] = _socket[_n_socks];
+            r = bind(_sockets[_n_socks],iterator->ai_addr,iterator->ai_addrlen);        
+            if(r != -1)
+            {
+                _n_socks++;
+            }
+        }
+    }
+
+    freeaddrinfo(start);
+    chnl.nom = NULL;
+    AddrStorage addr(config,port);
+    chnl.connection = addr;
+
+    _timer = _timer/1000;
+
+    run();
 }
 
-void usage (char *argv0)
+Channels::~Channels()
 {
-    fprintf (stderr, "usage: %s [port]\n", argv0) ;
-    exit (1) ;
+    for(int i=0;i<_n_socks;i++)
+    {
+        close(_sockets[i]);
+    }
 }
 
-void lire_message (int s)
+int Channels::sock(const AddrStorage &addr)
 {
-    struct sockaddr_storage sonadr ;
-    socklen_t salong ;
-    int r, af ;
-    void *nadr ;			/* au format network */
-    char padr [INET6_ADDRSTRLEN] ;	/* au format presentation */
-    char buf [MAXLEN] ;
+    return addr.sock();
+}
+void  Channels lire_message(AddrStorage * addr, char buf[],int s)
+{
 
-    salong = sizeof sonadr ;
-    r = recvfrom (s, buf, MAXLEN, 0, (struct sockaddr *) &sonadr, &salong) ;
-    af = ((struct sockaddr *) &sonadr)->sa_family ;
-    switch (af)
+    struct sockaddr_storage *temp_addr = addr->storage();
+    socklen_t temp_len;
+    temp_len = sizeof(struct sockaddr_storage);
+
+    int r = recvfrom(s,&buf,strlen(buf),0,(struct sockaddr*) temp_addr, &temp_len);
+
+    /*dg.code = ntohs(dg.code);
+    dg.seq = ntohs(dg.seq);*/
+
+    if(r!=-1) addr->build(s);
+    else throw (Exception("Server::receive : recvfrom failed.", __LINE__));
+
+    //cout << getpid() << " : " << dg << " from " << *addr << endl;
+    //  return;
+}
+    void Channels::run()
     {
-	case AF_INET :
-	    nadr = & ((struct sockaddr_in *) &sonadr)->sin_addr ;
-	    break ;
-	case AF_INET6 :
-	    nadr = & ((struct sockaddr_in6 *) &sonadr)->sin6_addr ;
-	    break ;
+        //Get a updated library
+        try
+        {
+            vector<AddrStorage*> addr;
+           // Client::synchronize(addr);
+
+            if(addr.size()<1) throw (Exception("There is no server active, unable ton find a library.",__LINE__));
+
+           // _lib = Client::get_library(*(addr[0]));
+
+            //Client::disconnect(addr);
+        }
+        catch(Exception e)
+        {
+            //No other server is running, lib stay empty
+        }
+
+
+
+        //Initialization of socket descriptor
+        fd_set readfds;
+        int max = 0;
+
+        FD_ZERO(&readfds);
+        for(int i=0;i<_n_socks;i++)
+        {
+            FD_SET(_sockets[i], &readfds);
+            if(_sockets[i]>max) 
+                max = _sockets[i];
+        }
+
+        char buf[MAXLEN];
+
+        AddrStorage *addr = new AddrStorage();
+
+        //Start server (infinite loop)
+        while(_run)
+        {
+            if(select(max+1, &readfds, NULL, NULL, NULL)>0)
+            {
+                for(int i = 0; i< _n_socks; i++)
+                {
+                    if(FD_ISSET(_sockets[i], &readfds))
+                    {
+                        //	receive(dg,addr,_sockets[i]);
+                        lire_message( addr,buf,_socket[i]);
+                        if chnl.canal[i]!=_socket[i]
+                            
+                      //  update_client_map(*addr);
+                      //  process(dg,*addr);
+                    }
+                }
+            }
+            else throw (Exception("Server::server : select failed.",__LINE__));
+        }
     }
-    inet_ntop (af, nadr, padr, sizeof padr) ;
-    printf ("%s: nb d'octets lus = %d\n", padr, r) ;
+    
+
+       void Channels::diffuser_message(CANAL canal, Client Cl, char buf[])
+       {
+     /*  Datagram cp = dg;
+       cp.code = htons(dg.code);
+       cp.seq = htons(dg.seq);*/
+
+     //  int r = sendto(sock(addr),&cp,sizeof(Datagram),0,addr.sockaddr(),addr.len());
+     //
+        fd_set readfds;
+        int max = 0;
+        if(FD_ISSET(cl.mySocket(),
+
+       int r = sendto(cl.mySocket(),&buf,MAXLEN*sizeof(char))
+    if(r==-1) throw (Exception("Server::send_to : sendto failed.",__LINE__));
+
+    //cout << getpid() << " : "<< dg << " to " << addr << endl;
+    return;
+    }
+
+    void Server::receive(Datagram &dg, AddrStorage *addr, int s)
+    {
+    struct sockaddr_storage *temp_addr = addr->storage();
+    socklen_t temp_len;
+    temp_len = sizeof(struct sockaddr_storage);
+
+    int r = recvfrom(s,&dg,sizeof(Datagram),0,(struct sockaddr*) temp_addr, &temp_len);
+
+    dg.code = ntohs(dg.code);
+    dg.seq = ntohs(dg.seq);
+
+    if(r!=-1) addr->build(s);
+    else throw (Exception("Server::receive : recvfrom failed.", __LINE__));
+
+    //cout << getpid() << " : " << dg << " from " << *addr << endl;
+    return;
+    }
+
+
+    /*
+     *
+     * Protocoles de base
+     *
+     *
+     */
+
+    /*void Server::connect_ack(const Datagram &dg, const AddrStorage &addr)
+      {
+      _client_map[addr].refresh();
+      _client_map[addr]._status = CONNECT;
+
+      Datagram s(CONNECTRA, 1, "Hey pretty client !");
+      send_to(s,addr);
+
+      return;
+      }
+
+      void Server::disconnect_ack(const Datagram &dg, const AddrStorage &addr)
+      {
+      _client_map[addr].refresh();
+      _client_map[addr]._status = DISCONNECT;
+
+      Datagram s(DISCONNECTRA, 0, "Bye lovely client !");
+      send_to(s,addr);
+
+      return;
+      }
+
+      void Server::send_file(const Datagram &dg, const AddrStorage &addr)
+      {
+      int init, size;
+      string file;
+
+      Datagram asw;
+
+      State *current = &_client_map[addr];
+      File *f;
+
+      char *buffer;
+
+      switch(current->_status)
+      {
+      case CONNECT :
+      file = Converter::cstos(dg.data);
+      current->_file = file;
+
+      switch(find_file(file))
+      {
+      case 2:
+      asw.init(DOWNLOAD,2,"File is here.");
+      current->_status = META;
+      break;
+      case 1:
+      if(dg.seq==1) //if a client ask
+      {
+      asw.init(DOWNLOAD,1,"File is in library, wait until I download it.");
+      import(file);
+      current->_status = DL;
+      }
+      else //if a server ask
+      {
+      asw.init(DOWNLOAD,0,"File does'nt exist.");
+      current->_status = DISCONNECT;
+      }
+      break;
+      case 0:
+      asw.init(DOWNLOAD,0,"File does'nt exist.");
+      current->_status = DISCONNECT;
+      break;
+      default:
+      break;
+      }
+      send_to(asw,addr);
+      break;
+
+      case DL:
+      file = Converter::cstos(dg.data);
+    current->_file = file;
+
+    switch(find_file(file))
+    {
+        case 2:
+            asw.init(DOWNLOAD,2,"File is here.");
+            current->_status = META;
+            break;
+        case 1:
+            asw.init(DOWNLOAD,1,"Wait please.");
+            break;
+        case 0:
+            asw.init(DOWNLOAD,0,"File does'nt exist.");
+            current->_status = DISCONNECT;
+            break;
+        default:
+            break;
+    }
+    send_to(asw,addr);
+    break;
+
+    case META :
+    file = current->_file;
+    switch(find_file(file))
+    {
+        case 2: //local file
+            f = new File(file);
+            size = f->size();
+            asw.init(DOWNLOAD,size,"Here is meta !");
+            send_to(asw,addr);
+            current->_status = DATA;
+            current->_buffer = f->readChar(size);
+            current->_size = size;
+            delete f;
+
+            break;
+
+        case 1:
+        case 0:
+            asw.init(DOWNLOAD,0,"File doesn't exist.");
+            send_to(asw,addr);
+        default:
+            break;
+    }
+
+    break;
+
+    case DATA :
+    if(dg.seq >= current->_size) init = dg.seq-(dg.seq%(DATASIZE-1));
+    else init = dg.seq-(DATASIZE-1);
+
+    buffer = new char[dg.seq-init+1];
+    buffer[dg.seq-init] = '\0';
+
+    for(int j=init;j<dg.seq;j++)
+    {
+        buffer[j-init] = current->_buffer[j];
+    }
+    asw.init(DOWNLOAD,dg.seq,buffer);
+    send_to(asw,addr);
+    break;
+
+    default :
+    break;
 }
 
-int main (int argc, char *argv [])
+return;
+}
+
+void Server::get_file(const Datagram &dg, const AddrStorage &addr)
 {
-    int s [MAXSOCK], nsock, r ;
-    struct addrinfo hints, *res, *res0 ;
-    char *cause ;
-    char *serv = NULL ;
+    int i, init, size, packet_number, current_packet;
+    Datagram asw;
 
-    switch (argc)
+    State *current = &_client_map[addr];
+    File *f;
+
+    switch(current->_status)
     {
-	case 1 : serv = SERVICE ; break ;
-	case 2 : serv = argv [1] ; break ;
-	default : usage (argv [0]) ; break ;
+        case CONNECT :
+            asw.init(UPLOAD,dg.seq,"I'm ready !");
+            send_to(asw,addr);
+            current->_status = META;
+            break;
+
+        case META :
+            //file name
+            if(dg.seq==0) current->_file = dg.data;
+            //title
+            if(dg.seq==1) current->_title = dg.data;
+            //size
+            if(dg.seq>1)
+            {
+                current->_size = dg.seq;
+                current->_buffer = new char[dg.seq+1];
+                current->_buffer[dg.seq] = '\0';
+                packet_number = ceil((float) current->_size/(float) (DATASIZE-1));
+                current->_received_packet.resize(packet_number,false);
+            }
+
+            if(current->is_meta())
+            {
+                asw.init(UPLOAD,current->_size,"Metas are nice.");
+                send_to(asw,addr);
+                current->_status = DATA;
+                remove(Converter::stocs(current->_file));
+            }
+            break;
+
+        case DATA :
+            size = current->_size;
+            packet_number = ceil((float) size/(float) (DATASIZE-1));
+            if(dg.seq%(DATASIZE-1)==0)
+            {
+                init = dg.seq-(DATASIZE-1);
+                current_packet = dg.seq/(DATASIZE-1);
+            }
+            else
+            {
+                init = dg.seq-(size-(packet_number-1)*(DATASIZE-1));
+                current_packet = packet_number;
+            }
+
+            for(i=init;i<dg.seq;i++)
+            {
+                current->_buffer[i] = dg.data[i-init];
+            }
+
+            current->_received_packet[current_packet-1] = true;
+
+            asw.init(UPLOAD,dg.seq,"Ack");
+            send_to(asw,addr);
+
+            if(current->is_data())
+            {
+                f = new File(current->_file);
+                f->write(Converter::cstos(current->_buffer));
+                delete f;
+            }
+            break;
+
+        default :
+            break;
     }
 
-    memset (&hints, 0, sizeof hints) ;
-    hints.ai_family = PF_UNSPEC ;
-    hints.ai_socktype = SOCK_DGRAM ;
-    hints.ai_flags = AI_PASSIVE ;
-    r = getaddrinfo (NULL, serv,  &hints, &res0) ;
-    if (r != 0)
+    return;
+}
+
+void Server::add_file(const Datagram &dg, const AddrStorage &addr)
+{
+    State *current = &_client_map[addr];
+    Datagram asw;
+    Record *r;
+
+    addr_map::iterator it;
+
+    switch(dg.seq)
     {
-	fprintf (stderr, "getaddrinfo: %s\n", gai_strerror (r)) ;
-	exit (1) ;
+        case 0:
+            current->_file = dg.data;
+            asw.init(ADD,dg.seq,"Ack");
+            send_to(asw,addr);
+            break;
+        case 1:
+            current->_title = dg.data;
+            asw.init(ADD,dg.seq,"Ack");
+            send_to(asw,addr);
+
+            r = new Record(current->_file,current->_title);
+            _lib = insert(_lib,*r);
+
+            break;
+
+        case 2:
+            //request from a client : sending info to other server
+            asw.init(ADD,dg.seq,"Ack");
+            try
+            {
+                addr_map::iterator it;
+                switch(fork())
+                {
+                    case -1:
+                        throw (Exception("Fork operation failed.",__LINE__));
+                        break;
+                    case 0:
+                        _run = false; //shut down listening server side
+                        for(it=_server_map.begin();it!=_server_map.end();++it)
+                        {
+                            Client::add_file(current->_file,current->_title,false,it->first);	
+                        }
+                        exit(0);
+
+                        break;
+                    default:
+                        break;
+                }
+
+            }
+            catch(Exception e)
+            {
+            }
+
+            send_to(asw,addr);
+            break;
     }
 
-    nsock = 0 ;
-    for (res = res0; res && nsock < MAXSOCK; res = res->ai_next)
-    {
-	s [nsock] = socket (res->ai_family, res->ai_socktype, res->ai_protocol) ;
-	if (s [nsock] == -1)
-	    cause = "socket" ;
-	else
-	{
-	    int o = 1 ;		/* pour Linux */
-	    setsockopt (s [nsock], IPPROTO_IPV6, IPV6_V6ONLY, &o, sizeof o) ;
+    return;
+}
 
-	    r = bind (s [nsock], res->ai_addr, res->ai_addrlen) ;
-	    if (r == -1)
-	    {
-		cause = "bind" ;
-		close (s [nsock]) ;
-	    }
-	    else nsock++ ;
-	}
+void Server::remove_file(const Datagram &dg, const AddrStorage &addr)
+{
+    string file = dg.data;
+
+    Datagram asw(REMOVE,0);
+
+    remove(dg.data); //rm file system
+    remove(_lib,file); //rm library
+
+    if(dg.seq>0) //recursive mode
+    {
+        try
+        {
+            addr_map::iterator it;
+            switch(fork())
+            {
+                case -1:
+                    throw (Exception("Fork operation failed.",__LINE__));
+                    break;
+                case 0:
+                    _run = false; //shut down listening server side
+                    for(it=_server_map.begin();it!=_server_map.end();++it)
+                    {
+                        Client::remove_file(file,false,it->first);
+                    }
+                    exit(0);
+
+                    break;
+                default:
+                    break;
+            }
+
+        }
+        catch(Exception e)
+        {
+        }
     }
-    if (nsock == 0) raler (cause) ;
-    freeaddrinfo (res0) ;
 
-    for (;;)
+    send_to(asw,addr);
+    return;
+}
+
+void Server::send_library(const Datagram &dg, const AddrStorage &addr)
+{
+    Datagram asw;
+    unsigned int size;
+    switch(dg.seq)
     {
-	fd_set readfds ;
-	int i, max = 0 ;
-
-	FD_ZERO (&readfds) ;
-	for (i = 0 ; i < nsock ; i++)
-	{
-	    FD_SET (s [i], &readfds) ;
-	    if (s [i] > max)
-		max = s [i] ;
-	}
-	if (select (max+1, &readfds, NULL, NULL, NULL) == -1)
-	    raler ("select") ;
-
-	for (i = 0 ; i < nsock ; i++)
-	    if (FD_ISSET (s [i], &readfds))
-		lire_message (s [i]) ;
+        case 0:
+            asw.init(GET,_lib.size(),"Here is meta !");
+            send_to(asw,addr);
+            break;
+        default:
+            size = dg.seq;
+            if(size>0&&size<=_lib.size())
+            {
+                asw.init(GET,dg.seq,_lib[dg.seq-1].file());
+                send_to(asw,addr);
+                asw.init(GET,dg.seq+_lib.size(),_lib[dg.seq-1].title());
+                send_to(asw,addr);
+            }
+            break;
     }
 }
+*/
+/*
+ *
+ * Surcouche serveur
+ *
+ *
+ */
+/*
+   void Server::process(const Datagram &dg, const AddrStorage &addr)
+   {
+   try
+   {
+   switch(dg.code)
+   {
+   case CONNECTRA :
+   connect_ack(dg,addr);
+   break;
+   case DISCONNECTRA :
+   disconnect_ack(dg,addr);
+   break;
+   case DOWNLOAD :
+   send_file(dg,addr);
+   break;
+   case UPLOAD :
+   get_file(dg,addr);
+   break;
+   case ADD :
+   add_file(dg,addr);
+   break;
+   case REMOVE :
+   remove_file(dg,addr);
+   break;
+   case GET :
+   send_library(dg,addr);
+   break;
+   default :
+   break;
+   }
+   }
+   catch(Exception e)
+   {
+   }
+
+   return;
+   }
+
+   void Server::update_client_map(const AddrStorage &addr)
+   {
+   addr_map::const_iterator it = _client_map.find(addr);
+   if(it == _client_map.end())
+   {
+   State new_state(DISCONNECT);
+   _client_map[addr] = new_state;
+   }
+
+   return;
+   }
+
+   int Server::find_file(const string &file)
+   {
+   library::iterator it;
+
+   for(it=_lib.begin();it!=_lib.end();++it)
+   {
+   if(it->file()==file) //if file is in library
+   {
+   if(File::exist(file)) //file exist
+   {
+   return 2;
+   }
+   else //file doesn't exist DL it !
+   {				
+   return 1;
+   }
+   }
+   }
+
+   return 0;
+}
+
+void Server::import(const string &file)
+{
+    addr_map::iterator it;
+    bool found = false;
+    Datagram rcv(DEFAULT);
+    Datagram ask(DEFAULT);
+
+
+    Counter c(RETRY,"");
+
+    string res;
+    File *f;
+
+    try
+    {
+        switch(fork())
+        {
+            case -1:
+                throw (Exception("Fork operation failed.",__LINE__));
+                break;
+            case 0:
+                for(it=_server_map.begin();it!=_server_map.end()&&!found;++it)
+                {
+                    try
+                    {
+                        c.restart(RETRY,"");
+                        rcv.init(DEFAULT);
+                        do
+                        {
+                            Client::connect_req(it->first);
+                            Client::receive_from(rcv,it->first);
+                            ++c;
+                        }
+                        while(rcv.seq!=1 || rcv.code!=CONNECTRA);
+
+                        while(Client::receive_from(rcv,it->first)); //flush
+
+                        c.restart(RETRY,"");
+                        rcv.init(DEFAULT,3);
+                        ask.init(DOWNLOAD,0,file);
+                        do
+                        {
+                            Client::send_to(ask,it->first);
+                            Client::receive_from(rcv,it->first);
+                            ++c;
+                        }
+                        while(rcv.seq!=2 || rcv.code!=DOWNLOAD);
+
+                        found = true;
+
+                        while(Client::receive_from(rcv,it->first)); //flush
+
+                    }
+                    catch(Exception e)
+                    {
+                    }
+                }
+                try
+                {
+                    if(it==_server_map.end())
+                    {
+                        //this file does'nt exist anymore
+                        Client::remove_file(file);
+                    }
+                    else
+                    {
+                        c.restart(RETRY,"");
+                        rcv.init(DEFAULT);
+                        do
+                        {
+                            Client::disconnect_req(it->first);
+                            Client::receive_from(rcv,it->first);
+                            ++c;
+                        }
+                        while(rcv.seq!=0 || rcv.code!=DISCONNECTRA);
+
+                        //reconnect and start a standard dl
+                        c.restart(RETRY,"");
+                        do
+                        {
+                            Client::connect_req(it->first);
+                            Client::receive_from(rcv,it->first);
+                            ++c;
+                        }
+                        while(rcv.seq!=1 || rcv.code!=CONNECTRA);
+
+                        while(Client::receive_from(rcv,it->first)); //flush
+
+                        res = Client::get_file(file,false,it->first);
+
+                        f = new File(file);
+                        f->write(res);
+                        delete f;
+
+                        c.restart(RETRY,"");
+                        rcv.init(DEFAULT);
+                        do
+                        {
+                            Client::disconnect_req(it->first);
+                            Client::receive_from(rcv,it->first);
+                            ++c;
+                        }
+                        while(rcv.seq!=0 || rcv.code!=DISCONNECTRA);	
+                    }
+                }
+                catch(Exception e)
+                {
+                    exit(0);
+                }
+                exit(0);
+                break;
+            default:
+                break;
+        }
+    }
+    catch(Exception e)
+    {
+    }
+
+    return;
+}*/
+
+
+
+
+

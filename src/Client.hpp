@@ -76,7 +76,7 @@ string charAdresse();
 typedef struct  canal_comunication
 {   
     char * nom ;
-    Client canal[MAXSOCK];
+    int canal[MAXSOCK];
     AddrStorage connection;
 } CANAL;
 #endif
