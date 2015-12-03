@@ -29,6 +29,7 @@ class  Client
 {
  private :
  string config;
+ AddrStorage monaddr;
  protected :
   int sock4;
   int sock6;
@@ -54,11 +55,11 @@ void  channelId(char * ,const AddrStorage & );
 /*!
   * Famille de socket qui a été faites
   */
-int mySocket(const AddrStorage &);
+int mySocket();
  /*!
   * logTo abonnement aux serveurs du canal
   */
-  void logTo(char * ,const AddrStorage &);
+  void logTo();
 /*!
  * sendTo Envoi des messages au server du canal
  */ 
@@ -67,17 +68,21 @@ int mySocket(const AddrStorage &);
   * recvfrom reçoit et affiche les messages 
   */
 void recvFrom(AddrStorage,char[]);
-struct sockaddr_storage addrStorage();
-const struct sockaddr_in & addrIn();
+AddrStorage  monAdresse();
+/*const struct sockaddr_in & addrIn();
 const struct sockaddr_in6 & addrIn6();
-string charAdresse();
+//string charAdresse();*/
 };
-
+typedef enum 
+{
+    CONNECTER,
+    LEAVE,
+} ETAT;
 typedef struct  canal_comunication
 {   
     char * nom ;
-    int canal[MAXSOCK];
-    AddrStorage connection;
+    AddrStorage clients[MAXSOCK];
+    AddrStorage serveur;
 } CANAL;
 #endif
 

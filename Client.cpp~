@@ -16,7 +16,11 @@
   exit (1) ;
 }*/
 //Canal de comunication 
-
+enum canal_comm
+{
+    string nom ;
+    int desc;
+}
 Client::Client(string config)
 {
     File conf(config);
@@ -24,10 +28,7 @@ Client::Client(string config)
     int i = 1;
     string line = "end";
     string a,p;
-    //ssize_t fr;
 
-   cout<<"Your login?\n";
-   fgets(login,MAXLEN,stdin);
     while((line = conf.read(i)) != "end")
     {
         char delim = ' ';
@@ -63,7 +64,7 @@ Client::Client(string config)
             //convert
 
             AddrStorage addr(a,p);
-//            State s(DISCONNECT);
+            State s(DISCONNECT);
 
             //_server_map[addr] = s;
         }
@@ -83,21 +84,7 @@ Client::~Client()
     close(sock4);
     close(sock6);
 }
-void Client::channelId(char * cnal,const AddrStorage & addr)
-{
-    int soket  = mySocket();
-    /*char  msg[] = "Identité des serveurs sur le canal";
-    char *  message = NULL;
-    strcpy(message,msg);
-    strcat(message,cnal.nom);*/
-    struct sockaddr * saddr = addr.sockaddr();
-    socklen_t salong = addr.len();
-    int longu = strlen(cnal);
-   int rq =  sendto(soket, cnal, longu, 0,  saddr, salong);
-   if( rq < 0)
-       cout<<"Error request from Channel Id\n";
-    
-}   
+void Client::channel
 // Demande l'identité du serveur 
 /* void channelId(char* channel,)
    {
@@ -161,9 +148,9 @@ void Client::channelId(char * cnal,const AddrStorage & addr)
 
    exit (0) ;
    }*/
-int Client::mySocket()
+int Client::mySocket(const AddrStorage & addr)
 {
-AddrStorage addr = monaddr;
+
     int res = -1;
     switch(addr.family())
     {
@@ -180,40 +167,51 @@ AddrStorage addr = monaddr;
     return res;
 }
 // Abonne   au serveur du canal
-void Client::logTo()
+void Client::logTo(string channel, const AddrStorage & addr)
 {
-    int socket = mySocket();
+    int socket = mySocket(addr);
     if (socket < 0){
         perror("socket non créé pour ce canal");
         exit(-1);
     }
+    /*socklen_t salong = addr.len();
+      struct sockaddr * saddr = addr.sockaddr();*/
+    //memset(&saddr,0x00,salong);
+    /*int attache = bind(socket, saddr , salong);
+      if (attache < 0 )
+      {
+      perror("attache client");
+      exit(-1);
+      }
+      cout<<"socket attaché \n";*/
+    int o = 1;
+    setsockopt(socket, SOL_SOCKET, SO_BROADCAST, &o, sizeof o) ;
 }
 // envoi un message au serveur de canal
-void Client::sendTo(const  AddrStorage & addr, char buf[] )
+void Client::sendTo(const  AddrStorage & addr)
 {   
-    int r, socket = mySocket();
+    int r, socket = mySocket(addr);
     struct sockaddr * saddr = addr.sockaddr();
-    //char buf [MAXLEN] ;
+    char buf [MAXLEN] ;
     socklen_t salong = addr.len();
-        buf = fgets(buf,MAXLEN,stdin);
-        r = sendto(socket, buf, MAXLEN, 0,  saddr, salong) ;
+    while ((r = read (0, buf, MAXLEN)) > 0)
+    {
+        r = sendto(socket, buf, r, 0,  saddr, salong) ;
         if(r==-1)
-         throw (Exception("send_to : Failed", __LINE__));
-        
-    
+        {
+            throw (Exception("send_to : Failed", __LINE__));
+        }
+    }
 }
-void Client::recvFrom(AddrStorage addr, char buf[])
+void Client::recvFrom(AddrStorage addr)
 {
     struct sockaddr_storage * sonadr = addr.storage();
     socklen_t salong = addr.len(); 
-    int r, af , socket = mySocket();
+    int r, af , socket = mySocket(addr);
     void *nadr ;            /* au format network */
     char padr [INET6_ADDRSTRLEN] ;  /* au format presentation */
-    memset(buf,0x00,MAXLEN*sizeof(char));
-    r = recvfrom (socket, buf, MAXLEN, 0, (struct sockaddr *) &sonadr, &salong) ;
-    if(r==-1)
-        throw (Exception("send_to : Failed", __LINE__));
-    
+    char buf [MAXLEN] ;
+ r = recvfrom (socket, buf, MAXLEN, 0, (struct sockaddr *) &sonadr, &salong) ;
     af = ((struct sockaddr *) &sonadr)->sa_family ;
     switch (af)
     {
@@ -225,8 +223,7 @@ void Client::recvFrom(AddrStorage addr, char buf[])
             break ;
     }
     inet_ntop (af, nadr, padr, sizeof padr) ;
-   printf ("%s: Message de  recu  de  %s\n", buf, padr) ;
-   
+    printf ("%s: nb d'octets lus = %d\n", padr, r) ;
 }
 
 

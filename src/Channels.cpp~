@@ -17,6 +17,7 @@ Channels::Channels(string port, string config):Client(config),_run(true)
         _sockets[_n_socks] = socket(iterator->ai_family,iterator->ai_socktype,iterator->ai_protocol);
         if(_sockets[_n_socks] != -1)
         {   
+            chnl.canal[_n_socks] = _sockets[_n_socks];
             r = bind(_sockets[_n_socks],iterator->ai_addr,iterator->ai_addrlen);        
             if(r != -1)
             {
@@ -26,13 +27,9 @@ Channels::Channels(string port, string config):Client(config),_run(true)
     }
 
     freeaddrinfo(start);
-    actuel = 0;
-    cout<<"Nom de Canal pour ce serveur\n";
-    fgets(chnl.nom,MAXLEN,stdin);
-    //bzero(chnl.nom,MAXLEN);
+    chnl.nom = NULL;
     AddrStorage addr(config,port);
-    chnl.serveur = addr;
-    bzero(chnl.clients,MAXSOCK);
+    chnl.connection = addr;
 
 //    _timer = _timer/1000;
 
@@ -51,15 +48,18 @@ int Channels::sock(const AddrStorage &addr)
 {
     return addr.sock();
 }
-void  Channels:: lire_message(AddrStorage * addr, char buf[MAXLEN],int sockt)
+void  Channels lire_message(AddrStorage * addr, char buf[],int sockt)
 {
 
     struct sockaddr_storage *temp_addr = addr->storage();
     socklen_t temp_len;
     temp_len = sizeof(struct sockaddr_storage);
-    bzero(buf,MAXLEN);
+
     int r = recvfrom(sockt,&buf,strlen(buf),0,(struct sockaddr*) temp_addr, &temp_len);
-    
+
+    /*dg.code = ntohs(dg.code);
+    dg.seq = ntohs(dg.seq);*/
+
     if(r!=-1)
      addr->build(sockt);
     else 
@@ -68,80 +68,89 @@ void  Channels:: lire_message(AddrStorage * addr, char buf[MAXLEN],int sockt)
     //cout << getpid() << " : " << dg << " from " << *addr << endl;
     //  return;
 }
-void Channels::run()
-{
-    //Get a updated library
-    try
+    void Channels::run()
     {
-        vector<AddrStorage*> addr;
-       // Client::synchronize(addr);
-      if(addr.size()<1) 
-          throw (Exception("There is no server active, unable ton find a library.",__LINE__));
+        //Get a updated library
+        try
+        {
+            vector<AddrStorage*> addr;
+           // Client::synchronize(addr);
+
+            if(addr.size()<1) throw (Exception("There is no server active, unable ton find a library.",__LINE__));
 
            // _lib = Client::get_library(*(addr[0]));
 
             //Client::disconnect(addr);
-    }
-    catch(Exception e)
-    {
-            //No other server is running, lib stay empty
-    }
-//Initialization of socket descriptor
-    fd_set readfds;
-    int max = 0;
-    FD_ZERO(&readfds);
-    for(int i=0;i<_n_socks;i++)
-    {
-        FD_SET(_sockets[i], &readfds);
-        if(_sockets[i]>max) 
-            max = _sockets[i];
-    }
-    char buf[MAXLEN];
-    AddrStorage addr = AddrStorage();
-//Start server (infinite loop)
-    while(_run)
-    {
-        if(select(max+1, &readfds, NULL, NULL, NULL)>0)
-        {
-            for(int i = 0; i< _n_socks; i++)
-            {
-                if(FD_ISSET(_sockets[i], &readfds))
-                {
-                lire_message( &addr,buf,_sockets[i]);
-                chnl.clients[i] = addr;
-                actuel++;
-                diffuser_message(chnl,addr,buf);
-               }
-            }
         }
+        catch(Exception e)
+        {
+            //No other server is running, lib stay empty
+        }
+
+
+
+        //Initialization of socket descriptor
+        fd_set readfds;
+        int max = 0;
+
+        FD_ZERO(&readfds);
+        for(int i=0;i<_n_socks;i++)
+        {
+            FD_SET(_sockets[i], &readfds);
+            if(_sockets[i]>max) 
+                max = _sockets[i];
+        }
+
+        char buf[MAXLEN];
+
+        AddrStorage *addr = new AddrStorage();
+
+        //Start server (infinite loop)
+        while(_run)
+        {
+            if(select(max+1, &readfds, NULL, NULL, NULL)>0)
+            {
+                for(int i = 0; i< _n_socks; i++)
+                {
+                    if(FD_ISSET(_sockets[i], &readfds))
+                    {
+                        //	receive(dg,addr,_sockets[i]);
+                        lire_message( addr,buf,_sockets[i]);
+                        //if (chnl.canal[i]!=_sockets[i])
+                            
+                      //  update_client_map(*addr);
+                      //  process(dg,*addr);
+                    }
+                }
+            }
             else throw (Exception("Server::server : select failed.",__LINE__));
+        }
     }
-}
-void Channels::diffuser_message(CANAL cnl, AddrStorage  abonner, char buf[MAXLEN])
-{     int st  ;
+    
+
+       void Channels::diffuser_message(CANAL cnl, Client abonner, char buf[])
+       {
+     /*  Datagram cp = dg;
+       cp.code = htons(dg.code);
+       cp.seq = htons(dg.seq);*/
 
      //  int r = sendto(sock(addr),&cp,sizeof(Datagram),0,addr.sockaddr(),addr.len());
      //
         fd_set readfds;
-       // int max = 0;
-        if(FD_ISSET(abonner.sock(),&readfds))
+        int max = 0;
+        if(FD_ISSET(abonner.mySocket(),&readfds))
         {
-            for (int i=0;i<actuel;i++)
-            {   
-                int ds = cnl.clients[i].sock();
-                if (ds!= abonner.sock())
-                {  
-                   struct sockaddr * saddr = cnl.clients[i].sockaddr();
-                   socklen_t salong        = cnl.clients[i].len();
-                   st = sendto(ds,buf,strlen(buf),0,saddr,salong);
-                }
+            for (int dif=0;dif<MAXSOCK;dif++)
+            {
+                if (cnl.canal[dif]!= abonner.mySocket())
+               //   int r = sendto(cnl.canal[dif],&buf,MAXLEN*sizeof(char),0);
             }
         }
-      if(st==-1) 
-        throw (Exception("Server::send_to : sendto failed.",__LINE__));
+    if(r==-1) throw (Exception("Server::send_to : sendto failed.",__LINE__));
+
     //cout << getpid() << " : "<< dg << " to " << addr << endl;
     return;
-}
+    }
 
 /*    void Server::receive(Datagram &dg, AddrStorage *addr, int s)
     {

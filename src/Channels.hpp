@@ -13,13 +13,14 @@ class Channels : public Client
 
 	int sock(const AddrStorage &addr);
         CANAL chnl;
+        int actuel;
 	void run();
 	
 	//Envoi/reception de datagrammes
 	/*void send_to(const Datagram &dg, const AddrStorage &addr);
 	void receive(Datagram &dg, AddrStorage *addr, int s);*/
-        void lire_message(AddrStorage * ,char[], int);
-        void diffuser_message(CANAL,Client ,char []);
+        void lire_message(AddrStorage * ,char[MAXLEN], int);
+        void diffuser_message(CANAL,AddrStorage  ,char[MAXLEN]);
 
 
 	
@@ -31,6 +32,7 @@ class Channels : public Client
 	int find_file(const string& file);
 
 	void import(const string &file);*/
+        void nouveaux(const AddrStorage &);
 
  private :
 	int _sockets[MAXSOCK];
@@ -39,7 +41,7 @@ class Channels : public Client
 	bool _run;
 
 	addr_map _client_map;
-	library _lib;
+//	library _lib;
 
 };
 
