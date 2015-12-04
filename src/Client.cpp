@@ -25,7 +25,7 @@ Client::Client(string config)
     string line = "end";
     string a,p;
     //ssize_t fr;
-
+   login = (char*) malloc( 1024);
    cout<<"Your login?\n";
    fgets(login,MAXLEN,stdin);
     while((line = conf.read(i)) != "end")
@@ -82,6 +82,7 @@ Client::~Client()
 {
     close(sock4);
     close(sock6);
+    free(login);
 }
 void Client::channelId(char * cnal,const AddrStorage & addr)
 {
@@ -194,11 +195,13 @@ void Client::sendTo(const  AddrStorage & addr, char buf[] )
     int r, socket = mySocket();
     struct sockaddr * saddr = addr.sockaddr();
     //char buf [MAXLEN] ;
+    buf = (char*)malloc(1024);
     socklen_t salong = addr.len();
         buf = fgets(buf,MAXLEN,stdin);
         r = sendto(socket, buf, MAXLEN, 0,  saddr, salong) ;
         if(r==-1)
          throw (Exception("send_to : Failed", __LINE__));
+        free(buf);
         
     
 }

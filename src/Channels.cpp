@@ -28,6 +28,7 @@ Channels::Channels(string port, string config):Client(config),_run(true)
     freeaddrinfo(start);
     actuel = 0;
     cout<<"Nom de Canal pour ce serveur\n";
+    chnl.nom = (char *)malloc(1024);
     fgets(chnl.nom,MAXLEN,stdin);
     //bzero(chnl.nom,MAXLEN);
     AddrStorage addr(config,port);
@@ -45,6 +46,7 @@ Channels::~Channels()
     {
         close(_sockets[i]);
     }
+    free(chnl.nom);
 }
 
 int Channels::sock(const AddrStorage &addr)

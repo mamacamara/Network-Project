@@ -5,7 +5,7 @@
  */
 
 #include "Channels.hpp"
-#include "Shell.hpp"
+//#include "Shell.hpp"
 #include "Exception.hpp"
 
 int main(int argc, const char* argv[])
@@ -32,14 +32,16 @@ int main(int argc, const char* argv[])
 		Channels s(port,config);
 	}
 	else if(type == "client")
-	{
-		Shell s;
-	}
-	else
-	{
-		cout << "Invalid arguments" << endl;
-		cout << argv[0] << " server|client [port]" << endl;
-	}
+	{   
+            string file = "server.cfg";
+            Client cl(file);
+            AddrStorage sonaddr(file,port);
+            char *buff =(char*)malloc(1024);
+            cl.sendTo(sonaddr,buff);
+            cl.recvFrom(sonaddr,buff);
+            free (buff);
+	    
 
 	return true;
+     }
 }
