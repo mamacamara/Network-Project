@@ -25,12 +25,12 @@ Client::Client(string config)
     string line = "end";
     string a,p;
     //ssize_t fr;
-   login = (char*) malloc( 1024);
-   cout<<"Your login?\n";
+  // login = (char*) malloc( 1024);
+   cout<<"Your login please?\n";
    fgets(login,MAXLEN,stdin);
     while((line = conf.read(i)) != "end")
     {
-        char delim = ' ';
+        char delim =' ';
         vector<string> v = Converter::split(line,delim);
 
         if(v.size()==2)
@@ -63,11 +63,12 @@ Client::Client(string config)
             //convert
 
             AddrStorage addr(a,p);
+            monaddr =addr;
 //            State s(DISCONNECT);
 
             //_server_map[addr] = s;
-        }
-        else throw (Exception("There is a mistake in server.cfg",__LINE__));
+      }
+     else throw (Exception("There is a mistake in server.cfg",__LINE__));
 
         i++;
     }
@@ -77,12 +78,13 @@ Client::Client(string config)
 
     // Create socket listening IPv6
     sock6 = socket(AF_INET6, SOCK_DGRAM, 0);
+    cout<<"mon adresse est "<<monaddr<<"\n";
 }
 Client::~Client()
 {
     close(sock4);
     close(sock6);
-    free(login);
+ //   free(login);
 }
 void Client::channelId(char * cnal,const AddrStorage & addr)
 {
@@ -99,9 +101,7 @@ void Client::channelId(char * cnal,const AddrStorage & addr)
        cout<<"Error request from Channel Id\n";
     
 }   
-// Demande l'identité du serveur 
-/* void channelId(char* channel,)
-   {
+/*   {
 
    struct sockaddr_in *sadr4 = (struct sockaddr_in *) &sadr ;
    struct sockaddr_in6 *sadr6 = (struct sockaddr_in6 *) &sadr ;
@@ -181,27 +181,31 @@ AddrStorage addr = monaddr;
     return res;
 }
 // Abonne   au serveur du canal
-void Client::logTo()
+void Client::logTo(const AddrStorage & addr)
 {
-    int socket = mySocket();
+    int socket = addr.sock();
     if (socket < 0){
         perror("socket non créé pour ce canal");
         exit(-1);
     }
 }
 // envoi un message au serveur de canal
-void Client::sendTo(const  AddrStorage & addr, char buf[] )
+void Client::sendTo(const  AddrStorage & addr, char * buf)
 {   
     int r, socket = mySocket();
     struct sockaddr * saddr = addr.sockaddr();
-    //char buf [MAXLEN] ;
-    buf = (char*)malloc(1024);
+  // char buf [MAXLEN] ;
+    char * buff = new char [MAXLEN];
+    buf = new char [MAXLEN];
     socklen_t salong = addr.len();
-        buf = fgets(buf,MAXLEN,stdin);
-        r = sendto(socket, buf, MAXLEN, 0,  saddr, salong) ;
-        if(r==-1)
-         throw (Exception("send_to : Failed", __LINE__));
-        free(buf);
+    cout<<"Message à envoyer ?\n";
+    fgets(buff,MAXLEN,stdin);
+    cout<<"Message Saisi  "<<buff<<"\n";
+    r = sendto(socket, buff, MAXLEN, 0,  saddr, salong) ;
+    if(r<0)
+        throw (Exception("send_to : Failed", __LINE__));
+    strcpy(buf,buff);
+    delete [] buff;
         
     
 }
@@ -212,10 +216,14 @@ void Client::recvFrom(AddrStorage addr, char buf[])
     int r, af , socket = mySocket();
     void *nadr ;            /* au format network */
     char padr [INET6_ADDRSTRLEN] ;  /* au format presentation */
-    memset(buf,0x00,MAXLEN*sizeof(char));
-    r = recvfrom (socket, buf, MAXLEN, 0, (struct sockaddr *) &sonadr, &salong) ;
+    char * buffer = (char*)malloc(1024);
+    buf = (char*)malloc(1024);
+    
+    r = recvfrom (socket, buffer, MAXLEN, 0, (struct sockaddr *) &sonadr, &salong) ;
     if(r==-1)
         throw (Exception("send_to : Failed", __LINE__));
+    strcpy(buf,buffer);
+    free(buffer);
     
     af = ((struct sockaddr *) &sonadr)->sa_family ;
     switch (af)
@@ -231,7 +239,10 @@ void Client::recvFrom(AddrStorage addr, char buf[])
    printf ("%s: Message de  recu  de  %s\n", buf, padr) ;
    
 }
-
+AddrStorage Client::monAdresse()
+{
+    return monaddr;
+}
 
 
 

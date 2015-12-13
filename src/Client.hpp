@@ -33,7 +33,7 @@ class  Client
  protected :
   int sock4;
   int sock6;
-  char * login;
+  char login[MAXLEN];
 
 // functions
 //void usage (char *);
@@ -59,15 +59,15 @@ int mySocket();
  /*!
   * logTo abonnement aux serveurs du canal
   */
-  void logTo();
+  void logTo(const AddrStorage &);
 /*!
  * sendTo Envoi des messages au server du canal
  */ 
- void sendTo(const AddrStorage &,char[]  );
+ void sendTo(const AddrStorage &,char *  );
 /*! 
   * recvfrom reçoit et affiche les messages 
   */
-void recvFrom(AddrStorage,char[]);
+void recvFrom(AddrStorage,char *);
 AddrStorage  monAdresse();
 /*const struct sockaddr_in & addrIn();
 const struct sockaddr_in6 & addrIn6();
@@ -81,7 +81,7 @@ typedef enum
 typedef struct  canal_comunication
 {   
     char * nom ;
-    AddrStorage clients[MAXSOCK];
+    AddrStorage  clients[MAXSOCK];
     AddrStorage serveur;
 } CANAL;
 #endif

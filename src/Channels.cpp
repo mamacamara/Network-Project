@@ -27,48 +27,88 @@ Channels::Channels(string port, string config):Client(config),_run(true)
 
     freeaddrinfo(start);
     actuel = 0;
-    cout<<"Nom de Canal pour ce serveur\n";
-    chnl.nom = (char *)malloc(1024);
+    cout<<"Nom de Canal pour ce serveur ?\n";
+    chnl.nom = new char[MAXLEN];
     fgets(chnl.nom,MAXLEN,stdin);
     //bzero(chnl.nom,MAXLEN);
     AddrStorage addr(config,port);
     chnl.serveur = addr;
-    bzero(chnl.clients,MAXSOCK);
+    //chnl.clients = new AddrStorage[MAXSOCK]
 
 //    _timer = _timer/1000;
 
     run();
 }
-
 Channels::~Channels()
 {
     for(int i=0;i<_n_socks;i++)
     {
         close(_sockets[i]);
     }
-    free(chnl.nom);
+    delete [] chnl.nom;
 }
 
 int Channels::sock(const AddrStorage &addr)
 {
     return addr.sock();
 }
-void  Channels:: lire_message(AddrStorage * addr, char buf[MAXLEN],int sockt)
-{
-
-    struct sockaddr_storage *temp_addr = addr->storage();
+void Channels:: lire_message(AddrStorage* addr, char * buf,int sockt)
+{   
+   // addr = new AddrStorage();
+    //struct sockaddr_in 
+    struct sockaddr_storage * temp_addr = addr->storage();
     socklen_t temp_len;
     temp_len = sizeof(struct sockaddr_storage);
-    bzero(buf,MAXLEN);
-    int r = recvfrom(sockt,&buf,strlen(buf),0,(struct sockaddr*) temp_addr, &temp_len);
-    
+    buf = new char[MAXLEN];
+    int r = recvfrom(sockt,buf,strlen(buf),0,(struct sockaddr *)temp_addr, &temp_len);
     if(r!=-1)
-     addr->build(sockt);
+    { 
+       cout<<"Message reçu ";
+       cout<< buf<<"\n";
+/*     cout<<"Configuration pour ce client\n";
+     char * config = new char[MAXLEN];
+     fgets(config,MAXLEN,stdin);
+     Client nouveaux(config);
+     AddrStorage adresse = nouveaux.monAdresse();
+     addr = &adresse ;*/
+       addr->build(sockt);
+    // cout<<"L'adresse du client  est "<< addr;
+     //delete [] config;
+    }
     else 
      throw (Exception("Server::receive : recvfrom failed.", __LINE__));
+    
+   // unsigned short  nport ;           /* au format network */
+   // char padr [INET6_ADDRSTRLEN] ;  /* au format presentation */
+ /*   string pport;
+    char * buffer = (char*)malloc(1024);
+    buf = (char*)malloc(1024);
+    
+    r = recvfrom (sockt, buffer, MAXLEN, 0, (struct sockaddr *) sonadr, &salong) ;
+    if(r==-1)
+        throw (Exception("send_to : Failed", __LINE__));
+    strcpy(buf,buffer);
+    free(buffer);
+    
+    af = ((struct sockaddr *) &sonadr)->sa_family ;
+    switch (af)
+    {
+        case AF_INET :
+            nadr = & ((struct sockaddr_in *) &sonadr)->sin_addr ;
+            nport =  ((struct sockaddr_in *) &sonadr)->sin_port ;
+            break ;
+        case AF_INET6 :
+            nadr = & ((struct sockaddr_in6 *) &sonadr)->sin6_addr ;
+            nport =  ((struct sockaddr_in6 *) &sonadr)->sin6_port ;
+            break ;
+    }
+    inet_ntop (af, nadr, padr, sizeof padr) ;
+     pport=Converter::itos(nport);
+    addr = new AddrStorage(padr,pport);
+    */
+  //  cout<<"Message recu "<<buf <<"  Envoyé par "<<addr->paddr()<<":"<<addr->pport()<<"\n";
+   
 
-    //cout << getpid() << " : " << dg << " from " << *addr << endl;
-    //  return;
 }
 void Channels::run()
 {
@@ -89,6 +129,7 @@ void Channels::run()
             //No other server is running, lib stay empty
     }
 //Initialization of socket descriptor
+cout<<"mon adresse est "<<monAdresse()<<"\n";
     fd_set readfds;
     int max = 0;
     FD_ZERO(&readfds);
@@ -98,8 +139,8 @@ void Channels::run()
         if(_sockets[i]>max) 
             max = _sockets[i];
     }
-    char buf[MAXLEN];
-    AddrStorage addr = AddrStorage();
+    char *buf = new char[MAXLEN];
+    AddrStorage *addr = new AddrStorage[MAXSOCK];
 //Start server (infinite loop)
     while(_run)
     {
@@ -108,45 +149,54 @@ void Channels::run()
             for(int i = 0; i< _n_socks; i++)
             {
                 if(FD_ISSET(_sockets[i], &readfds))
-                {
-                lire_message( &addr,buf,_sockets[i]);
-                chnl.clients[i] = addr;
-                actuel++;
-                diffuser_message(chnl,addr,buf);
+                {   char * buffer = new char[MAXLEN];
+                   // cout <<"nommbre de connecte avant est "<<actuel<<"\n";
+                    lire_message(&addr[i],buf,_sockets[i]);
+                    actuel++;
+                    //char * config = new char [MAXLEN];
+                   // cout<<"Fichier de configuration pour ce client \n";
+                    //fgets(config,MAXLEN,stdin);
+                   // Client nouveaux(config);
+                    //AddrStorage adresse = nouveaux.monAdresse();
+                   // cout <<"nommbre de connecte apres est "<<actuel<<"\n";
+                    chnl.clients[i] = addr[i];;
+                    cout<<"Element du canal \n "<< addr[i] <<"\n  Socket associé  \n "<<_sockets[i]<<"\n";
+
+                    if(&addr[i]!=NULL)
+                      diffuser_message(_sockets[i],chnl,addr[i],buffer);
+                    delete [] buffer;
                }
             }
         }
             else throw (Exception("Server::server : select failed.",__LINE__));
     }
 }
-void Channels::diffuser_message(CANAL cnl, AddrStorage  abonner, char buf[MAXLEN])
-{     int st  ;
-
-     //  int r = sendto(sock(addr),&cp,sizeof(Datagram),0,addr.sockaddr(),addr.len());
-     //
-        fd_set readfds;
-       // int max = 0;
-        if(FD_ISSET(abonner.sock(),&readfds))
-        {
+void Channels::diffuser_message(int sok,CANAL cnl, AddrStorage  abonner, char * buf)
+{     
+    int st  ;
+    char * envoi = new char [MAXLEN];
+    strcpy(envoi,buf);
             for (int i=0;i<actuel;i++)
             {   
                 int ds = cnl.clients[i].sock();
                 if (ds!= abonner.sock())
                 {  
-                   struct sockaddr * saddr = cnl.clients[i].sockaddr();
-                   socklen_t salong        = cnl.clients[i].len();
-                   st = sendto(ds,buf,strlen(buf),0,saddr,salong);
-                }
-            }
-        }
-      if(st==-1) 
-        throw (Exception("Server::send_to : sendto failed.",__LINE__));
-    //cout << getpid() << " : "<< dg << " to " << addr << endl;
+                    struct sockaddr * saddr = cnl.clients[i].sockaddr();
+                    socklen_t salong        = sizeof(saddr);
+                    st = sendto(sok,envoi,strlen(envoi),0,saddr,salong);
+                    if (st==-1)
+                    {
+                       perror("sendto ");
+                       throw (Exception("Server::send_to : sendto failed.",__LINE__));
+                    }
+               }
+            } 
+            delete [] envoi;
     return;
 }
 
-/*    void Server::receive(Datagram &dg, AddrStorage *addr, int s)
-    {
+    /*    void Server::receive(Datagram &dg, AddrStorage *addr, int s)
+        {
     struct sockaddr_storage *temp_addr = addr->storage();
     socklen_t temp_len;
     temp_len = sizeof(struct sockaddr_storage);

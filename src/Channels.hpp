@@ -19,8 +19,8 @@ class Channels : public Client
 	//Envoi/reception de datagrammes
 	/*void send_to(const Datagram &dg, const AddrStorage &addr);
 	void receive(Datagram &dg, AddrStorage *addr, int s);*/
-        void lire_message(AddrStorage * ,char[MAXLEN], int);
-        void diffuser_message(CANAL,AddrStorage  ,char[MAXLEN]);
+        void lire_message(AddrStorage *,char*, int);
+        void diffuser_message(int,CANAL,AddrStorage,char *);
 
 
 	

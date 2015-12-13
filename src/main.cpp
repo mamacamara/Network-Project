@@ -7,6 +7,7 @@
 #include "Channels.hpp"
 //#include "Shell.hpp"
 #include "Exception.hpp"
+using namespace std;
 
 int main(int argc, const char* argv[])
 {
@@ -31,17 +32,23 @@ int main(int argc, const char* argv[])
 		string config = "server.cfg";
 		Channels s(port,config);
 	}
-	else if(type == "client")
+	else if(type == "client1")
 	{   
-            string file = "server.cfg";
+            string file = "client1.cfg";
             Client cl(file);
-            AddrStorage sonaddr(file,port);
-            char *buff =(char*)malloc(1024);
+            AddrStorage sonaddr("127.0.0.1","4244");
+            char buff[MAXLEN];
             cl.sendTo(sonaddr,buff);
             cl.recvFrom(sonaddr,buff);
-            free (buff);
-	    
-
-	return true;
-     }
+       }
+	else if(type == "client2")
+	{   
+            string file = "client2.cfg";
+            Client cl(file);
+            AddrStorage sonaddr("127.0.0.1","4244");
+            char buff[MAXLEN];
+            cl.sendTo(sonaddr,buff);
+            cl.recvFrom(sonaddr,buff);
+        }
+return true;
 }
