@@ -1,5 +1,5 @@
 CXX=g++
-CFLAGS=-Wall -std=c++0x
+CFLAGS= -g -Wall -std=c++0x
 
 EXEC=build/ChaToYou
 
@@ -13,7 +13,7 @@ all: $(EXEC)
 $(EXEC): $(OBJS)
 	$(CXX) $(CFLAGS) -o $@ $^
 	mv *.o build/
-	cp src/server.cfg build/
+	cp src/*.cfg build/
 %.o: %.cpp
 	$(CXX) $(CFLAGS) -o $@ -c $<
 
